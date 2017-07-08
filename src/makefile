@@ -1,8 +1,8 @@
-#v1.0 copyright Comine.com 20170705W0958
+#v1.0 copyright Comine.com 20170705W0954
 # Simple Make file for nmake
 #  -Revised to exclude extra search libraries
 
-OUTPUT=MPipeServer.exe
+OUTPUT=MPipeClient.exe
 LIBS=
 CC=cl.exe
 CLINKER=link.exe
@@ -57,5 +57,4 @@ cleanall:
 	-rm -f *.tli
 	-rm -f *.tlh
 	-rm -f $(OUTPUT)
-
 

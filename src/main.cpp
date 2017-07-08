@@ -18,18 +18,20 @@
 */
 
 
-//v1.1 copyright Comine.com 20170708S1352
+//v1.1 copyright Comine.com 20170708S1530
 #include "MStdLib.h"
 #include "MCommandArg.h"
-#include "MWinNamedPipe.h"
 #include "MLicenseGPL.h"
+#include "MWinNamedPipe.h"
 
 
 //******************************************************
 //* Module Elements
 //******************************************************
-static const char *GApplicationName="MPipeServer";	// Used in Help
-static const char *GApplicationVersion="1.1";	// Used in Help
+static const char *GApplicationName="MPipeClient";	// Used in Help
+static const char *GApplicationVersion="1.1";		// Used in Help
+
+static const int GWaitTime=3000;					// Wait for 3000ms for connection
 
 ////////////////////////////////////////////////////
 static void GDisplayHelp(void);
@@ -40,16 +42,16 @@ int main(int argn,const char *argv[])
 	MCommandArg args(argn,argv);
 
 	///////////////////////////////////////////////
-	if(args.GetArgCount()<2)
-		{
-		GDisplayHelp();
-		return 0;
-		}
-
 	if(args.CheckRemoveArg("-gpl")==true)
 		{
 		MLicenseGPL license(true);
 		license.Print();
+		return 0;
+		}
+
+	if(args.GetArgCount()<3)
+		{
+		GDisplayHelp();
 		return 0;
 		}
 
@@ -60,38 +62,24 @@ int main(int argn,const char *argv[])
 		}
 
 	const char *pipename=args.GetArg(1);
+	const char *message=args.GetArg(2);
+	const int messagelen=MStdStrLen(message);
 
-	MWinNamedPipeServer server;
-	if(server.Create(pipename)==false)
+	MWinNamedPipeClient pipeclient;
+	if(pipeclient.Create(pipename,GWaitTime)==false)
 		{
-		MStdPrintf("**Unable to start server for pipe %s\n",pipename);
+		MStdPrintf("**Unable to connect to named pipe %s within %dms\n",pipename,GWaitTime);
 		return 1;
 		}
 
-	MStdPrintf("Starting Pipe Server on %s\n",pipename);
-
-	for(;;)
+	const int writtenlen=pipeclient.Write(message,messagelen+1);
+	if(writtenlen!=messagelen+1)
 		{
-		if(server.Connect()==false)
-			{
-			MStdPrintf("**Connection Failed\n");
-			continue;
-			}
-
-		char buf[100];
-		const int msglen=server.Read(buf,sizeof(buf)-2);
-		if(msglen<0)
-			{
-			MStdPrintf("**Message receive failed\n");
-			return false;
-			}
-
-		buf[msglen]=0;
-		MStdPrintf("Message Received: %s\n",buf);
-
-		server.Disconnect();
+		MStdPrintf("**Unable to send message to pipe\n");
+		return 1;
 		}
 
+	MStdPrintf("Done...\n");
 	return 0;
 	}
 
@@ -100,13 +88,13 @@ int main(int argn,const char *argv[])
 static void GDisplayHelp(void)
 	{
 	MStdPrintf(	"\n"
-				"   usage:  %s [-?|-gpl] <pipename>\n"
+				"   usage:  %s [-?|-gpl] <pipename>  <msg> \n"
 				"           v%s copyright Comine.com\n"
-				"           -gpl will display the Gnu Public License\n"
+				"           -gpl displays the GNU public license\n"
 				"\n"
-				"   Program starts up a named pipe passed as an argument.  All messages sent\n"
-				"   from the MPipeClient.exe will be displayed. Pipe names must follow the \n"
-				"   format:    \\\\.\\pipe\\(Pipe Name)\n"								
+				"   Send a string message to a named pipe.  The MPipeServer.exe can be run to\n"
+				"   receive string pipe messages.  The pipe name must have a format of the\n"
+				"   following:  \\\\.\\pipe\\(Pipe Name)\n"
 				"\n"
 				,GApplicationName,GApplicationVersion);
 	}
