@@ -37,9 +37,9 @@ well manipulating the security elements found in the Windows Operating System.
 The following links is for the direct download of the 32 bit executable with
 an MD5 digest of the executable.
 
-Windows 32-bit Binary : [MPipeServer.exe](bin/MPipeServer.exe)
+Windows 32-bit Binary : [MPipeClient.exe](bin/MPipeClient.exe)
 
-MD5 Digest for binary : [MPipeServer.exe.md5](bin/MPipeServer.exe.md5)
+MD5 Digest for binary : [MPipeClient.exe.md5](bin/MPipeClient.exe.md5)
 
 
          
