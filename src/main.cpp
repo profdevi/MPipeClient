@@ -18,18 +18,19 @@
 */
 
 
-//v1.1 copyright Comine.com 20170708S1530
+//v1.2 copyright Comine.com 20170724M0929
 #include "MStdLib.h"
 #include "MCommandArg.h"
 #include "MLicenseGPL.h"
 #include "MWinNamedPipe.h"
+#include "TVector.h"
 
 
 //******************************************************
 //* Module Elements
 //******************************************************
 static const char *GApplicationName="MPipeClient";	// Used in Help
-static const char *GApplicationVersion="1.1";		// Used in Help
+static const char *GApplicationVersion="1.2";		// Used in Help
 
 static const int GWaitTime=3000;					// Wait for 3000ms for connection
 
@@ -61,6 +62,11 @@ int main(int argn,const char *argv[])
 		return 0;
 		}
 
+	// Check if wait for response requested
+	bool bwaitresponse=false;
+	if(args.CheckRemoveArg("-w")==true) {  bwaitresponse=true;  }
+
+	// Pipe name
 	const char *pipename=args.GetArg(1);
 	const char *message=args.GetArg(2);
 	const int messagelen=MStdStrLen(message);
@@ -79,7 +85,23 @@ int main(int argn,const char *argv[])
 		return 1;
 		}
 
-	MStdPrintf("Done...\n");
+	MStdPrintf("Sent Message %s...\n",message);
+
+	if(bwaitresponse==true)
+		{
+		TVector<char> buffer(1000);
+		const int readcount=pipeclient.Read(buffer.Get(),buffer.GetCount()-2);
+		if(readcount<=0 || readcount>=buffer.GetCount())
+			{
+			MStdPrintf("**Unable to read response message from server\n");
+			return 2;
+			}
+		
+		buffer[readcount]=0;
+		MStdPrintf("Server Returned: %s\n",buffer.Get() );
+		return 0;
+		}
+	
 	return 0;
 	}
 
@@ -88,13 +110,16 @@ int main(int argn,const char *argv[])
 static void GDisplayHelp(void)
 	{
 	MStdPrintf(	"\n"
-				"   usage:  %s [-?|-gpl] <pipename>  <msg> \n"
+				"   usage:  %s [-?|-gpl] [-w] <pipename>  <msg> \n"
 				"           v%s copyright Comine.com\n"
 				"           -gpl displays the GNU public license\n"
 				"\n"
 				"   Send a string message to a named pipe.  The MPipeServer.exe can be run to\n"
 				"   receive string pipe messages.  The pipe name must have a format of the\n"
 				"   following:  \\\\.\\pipe\\(Pipe Name)\n"
+				"\n"
+				"   The flag -w will wait till the server returns a message and prints out \n"
+				"   the message.\n"
 				"\n"
 				,GApplicationName,GApplicationVersion);
 	}
