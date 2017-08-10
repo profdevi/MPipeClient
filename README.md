@@ -31,7 +31,6 @@ communicating requests between processes.  The code of this project uses
 reusable components for Interprocess communication using named pipes, as 
 well manipulating the security elements found in the Windows Operating System.
 
-
 # Download Links 
 
 The following links is for the direct download of the 32 bit executable with
